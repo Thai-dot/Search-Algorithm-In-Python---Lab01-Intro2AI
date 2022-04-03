@@ -1,26 +1,11 @@
 import numpy as np
+from queue import PriorityQueue
+
+from sympy import false
 
 
 def BFS(matrix, start, end):
-    """
-    BFS algorithm:
-    Parameters:
-    ---------------------------
-    matrix: np array 
-        The graph's adjacency matrix
-    start: integer
-        starting node
-    end: integer
-        ending node
 
-    Returns
-    ---------------------
-    visited
-        The dictionary contains visited nodes, each key is a visited node,
-        each value is the adjacent node visited before it.
-    path: list
-        Founded path
-    """
     # TODO:
 
     path = []
@@ -50,26 +35,6 @@ def BFS(matrix, start, end):
 
 
 def DFS(matrix, start, end):
-    """
-    DFS algorithm
-     Parameters:
-    ---------------------------
-    matrix: np array 
-        The graph's adjacency matrix
-    start: integer 
-        starting node
-    end: integer
-        ending node
-
-    Returns
-    ---------------------
-    visited 
-        The dictionary contains visited nodes: each key is a visited node, 
-        each value is the key's adjacent node which is visited before key.
-    path: list
-        Founded path
-    """
-
     # TODO:
 
     path = []
@@ -99,75 +64,70 @@ def DFS(matrix, start, end):
 
 
 def UCS(matrix, start, end):
-    """
-    Uniform Cost Search algorithm
-     Parameters:visited
-    ---------------------------
-    matrix: np array 
-        The graph's adjacency matrix
-    start: integer 
-        starting node
-    end: integer
-        ending node
-
-    Returns
-    ---------------------
-    visited
-        The dictionary contains visited nodes: each key is a visited node, 
-        each value is the key's adjacent node which is visited before key.
-    path: list
-        Founded path
-    """
     # TODO:
     path = []
     visited = {}
 
-    frontier = {}  # frontier for UCS
+    frontier = {}
     # push the first node into the frontier
-    frontier.update({start: 0})
-    visited.update({start: None})
+    frontier.update({start: (0, None)})
 
     while frontier:
-        node = min(frontier, key=frontier.get) # get the node with the smallest cost
-        path.append(node)  # path for UCS
+        node = min(frontier.items(), key=lambda x: x[1][0])[0]
+        visited.update({node: frontier[node][1]})
 
-        if node == end:  # if the last node is the end node, break the node
+        if node == end:
             break
+
         for i in range(len(matrix[node])):
             if matrix[node][i] > 0 and i not in visited:
-                new_cost = frontier.get(node) + matrix[node][i]
-                if i not in frontier or new_cost < frontier.get(i):
-                    frontier.update({i: new_cost})
-                    visited.update({i: node})
+                new_cost = frontier.get(node)[0] + matrix[node][i]
+                if i not in frontier or new_cost < frontier.get(i)[0]:
+                    frontier.update({i: (new_cost, node)})
+
         del frontier[node]  # delete the node from the frontier
-    print(path)
-    print(visited)
+
+    node = end
+    while node != start:
+        path.append(node)
+        node = visited[node]
+    path.append(start)
+    path = path[::-1]
+
     return visited, path
 
 
 def GBFS(matrix, start, end):
-    """
-    Greedy Best First Search algorithm
-     Parameters:
-    ---------------------------
-    matrix: np array 
-        The graph's adjacency matrix
-    start: integer 
-        starting node
-    end: integer
-        ending node
 
-    Returns
-    ---------------------
-    visited
-        The dictionary contains visited nodes: each key is a visited node, 
-        each value is the key's adjacent node which is visited before key.
-    path: list
-        Founded path
-    """
     # TODO:
     path = []
     visited = {}
+
+    closedList = []
+    openList = {}
+    openList.update({start: (0, None)})
+
+    while openList:
+        node = min(openList.items(), key=lambda x: x[1][0])[0]
+        closedList.append(node)
+        visited.update({node: openList[node][1]})
+        if node == end:
+            break
+        for i in range(len(matrix[node])):
+            if matrix[node][i] > 0 and i not in closedList:
+                edge_weight = matrix[node][i]
+                if i not in openList or edge_weight < openList.get(i)[0]:
+                    openList.update({i: (edge_weight, node)})
+
+        del openList[node]
+
+    node = end
+    while node != start:
+        path.append(node)
+        node = visited[node]
+    path.append(start)
+    path = path[::-1]
+
     return visited, path
 
 
